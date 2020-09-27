@@ -91,6 +91,7 @@ bool DoState(StateWrapper& sw);
 u8* GetFastmemBase();
 bool AllocateMemory();
 void UpdateFastmemViews(bool enabled, bool isolate_cache);
+bool CanUseFastmemForAddress(VirtualMemoryAddress address);
 
 void SetExpansionROM(std::vector<u8> data);
 void SetBIOS(const std::vector<u8>& image);
