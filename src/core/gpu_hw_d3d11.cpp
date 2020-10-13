@@ -299,7 +299,7 @@ bool GPU_HW_D3D11::CreateStateObjects()
   if (FAILED(hr))
     return false;
 
-  ds_desc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL;
+  ds_desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
   hr = m_device->CreateDepthStencilState(&ds_desc, m_depth_test_less_state.ReleaseAndGetAddressOf());
   if (FAILED(hr))
     return false;
@@ -622,7 +622,7 @@ void GPU_HW_D3D11::DrawBatchVertices(BatchRenderMode render_mode, u32 base_verte
     (render_mode == BatchRenderMode::OnlyOpaque) ? TransparencyMode::Disabled : m_batch.transparency_mode;
   m_context->OMSetBlendState(m_batch_blend_states[static_cast<u8>(transparency_mode)].Get(), nullptr, 0xFFFFFFFFu);
   m_context->OMSetDepthStencilState(
-    m_batch.check_mask_before_draw ? m_depth_test_less_state.Get() : m_depth_test_always_state.Get(), 0);
+    m_batch.use_depth ? m_depth_test_less_state.Get() : m_depth_test_always_state.Get(), 0);
 
   m_context->Draw(num_vertices, base_vertex);
 }
@@ -782,7 +782,7 @@ void GPU_HW_D3D11::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* d
 
   const VRAMWriteUBOData uniforms = GetVRAMWriteUBOData(x, y, width, height, map_result.index_aligned);
   m_context->OMSetDepthStencilState(
-    m_GPUSTAT.check_mask_before_draw ? m_depth_test_less_state.Get() : m_depth_test_always_state.Get(), 0);
+    m_GPUSTAT.check_mask_before_draw ? m_depth_test_always_state.Get() : m_depth_test_always_state.Get(), 0);
   m_context->PSSetShaderResources(0, 1, m_texture_stream_buffer_srv_r16ui.GetAddressOf());
 
   // the viewport should already be set to the full vram, so just adjust the scissor
@@ -810,7 +810,7 @@ void GPU_HW_D3D11::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 widt
     SetViewportAndScissor(dst_bounds_scaled.left, dst_bounds_scaled.top, dst_bounds_scaled.GetWidth(),
                           dst_bounds_scaled.GetHeight());
     m_context->OMSetDepthStencilState(
-      m_GPUSTAT.check_mask_before_draw ? m_depth_test_less_state.Get() : m_depth_test_always_state.Get(), 0);
+      m_GPUSTAT.check_mask_before_draw ? m_depth_test_always_state.Get() : m_depth_test_always_state.Get(), 0);
     m_context->PSSetShaderResources(0, 1, m_vram_read_texture.GetD3DSRVArray());
     DrawUtilityShader(m_vram_copy_pixel_shader.Get(), &uniforms, sizeof(uniforms));
     RestoreGraphicsAPIState();

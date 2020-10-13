@@ -130,7 +130,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured)
   pos_y = -pos_y;
 #endif
 
-  v_pos = float4(pos_x * pos_w, pos_y * pos_w, pos_z * pos_w, pos_w);
+  v_pos = float4(pos_x * pos_w, pos_y * pos_w, pos_w * pos_w, pos_w);
 
   v_col0 = a_col0;
   #if TEXTURED
@@ -903,7 +903,7 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
         o_col0 = float4(color, u_dst_alpha_factor / ialpha);
       #endif
 
-      o_depth = oalpha * v_pos.z;
+      o_depth = /*oalpha * */v_pos.z;
     }
     else
     {
@@ -926,7 +926,7 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
         #endif
       #endif
 
-      o_depth = oalpha * v_pos.z;
+      o_depth = /*oalpha * */v_pos.z;
     }
   #else
     // Non-transparency won't enable blending so we can write the mask here regardless.
@@ -936,7 +936,7 @@ float4 SampleFromVRAM(uint4 texpage, float2 coords)
       o_col1 = float4(0.0, 0.0, 0.0, 1.0 - ialpha);
     #endif
 
-    o_depth = oalpha * v_pos.z;
+    o_depth = /*oalpha * */v_pos.z;
   #endif
 }
 )";
@@ -1125,7 +1125,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_ssbo)
   uint value = GET_VALUE(buffer_offset) | u_mask_or_bits;
   
   o_col0 = RGBA5551ToRGBA8(value);
-  o_depth = (o_col0.a == 1.0) ? u_depth_value : 0.0;
+  o_depth = 1.0;
 })";
 
   return ss.str();

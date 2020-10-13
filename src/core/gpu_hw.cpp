@@ -408,6 +408,13 @@ void GPU_HW::LoadVertices()
           v.w = 1.0f;
       }
 
+      if (m_batch.use_depth != valid_w)
+      {
+        FlushRender();
+        m_batch.use_depth = valid_w;
+        EnsureVertexBufferSpaceForCurrentCommand();
+      }
+
       if (rc.quad_polygon && m_resolution_scale > 1)
         HandleFlippedQuadTextureCoordinates(vertices.data());
 
@@ -489,6 +496,13 @@ void GPU_HW::LoadVertices()
 
     case Primitive::Rectangle:
     {
+      if (m_batch.use_depth)
+      {
+        FlushRender();
+        m_batch.use_depth = false;
+        EnsureVertexBufferSpaceForCurrentCommand();
+      }
+
       const u32 color = rc.color_for_first_vertex;
       const VertexPosition vp{FifoPop()};
       const s32 pos_x = TruncateVertexPosition(m_drawing_offset.x + vp.x);
@@ -583,6 +597,13 @@ void GPU_HW::LoadVertices()
 
     case Primitive::Line:
     {
+        if (m_batch.use_depth)
+        {
+          FlushRender();
+          m_batch.use_depth = false;
+          EnsureVertexBufferSpaceForCurrentCommand();
+        }
+
       if (!rc.polyline)
       {
         DebugAssert(GetBatchVertexSpace() >= 2);
@@ -709,6 +730,7 @@ GPU_HW::VRAMFillUBOData GPU_HW::GetVRAMFillUBOData(u32 x, u32 y, u32 width, u32 
   VRAMFillUBOData uniforms;
   std::tie(uniforms.u_fill_color[0], uniforms.u_fill_color[1], uniforms.u_fill_color[2], uniforms.u_fill_color[3]) =
     RGBA8ToFloat(color);
+  uniforms.u_fill_color[3] = 1.0f;
   uniforms.u_interlaced_displayed_field = GetActiveLineLSB();
   return uniforms;
 }

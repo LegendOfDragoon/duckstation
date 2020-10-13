@@ -100,6 +100,7 @@ protected:
     bool interlacing;
     bool set_mask_while_drawing;
     bool check_mask_before_draw;
+    bool use_depth;
 
     // We need two-pass rendering when using BG-FG blending and texturing, as the transparency can be enabled
     // on a per-pixel basis, and the opaque pixels shouldn't be blended at all.
